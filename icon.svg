@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Slovenske barve: bela, modra (#0055A4), rdeča (#ED1C24) -->
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0033A0"/>
+      <stop offset="50%" style="stop-color:#0055A4"/>
+      <stop offset="100%" style="stop-color:#1a6bb5"/>
+    </linearGradient>
+    <linearGradient id="mountain" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="40%" style="stop-color:#E8F0F8"/>
+      <stop offset="75%" style="stop-color:#A8C4E0"/>
+      <stop offset="100%" style="stop-color:#4A7AB0"/>
+    </linearGradient>
+    <linearGradient id="snow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="100%" style="stop-color:#F0F4F8"/>
+    </linearGradient>
+    <linearGradient id="redAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#C8102E"/>
+      <stop offset="100%" style="stop-color:#ED1C24"/>
+    </linearGradient>
+    <clipPath id="roundClip">
+      <rect width="512" height="512" rx="108" ry="108"/>
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="108" ry="108" fill="url(#sky)"/>
+
+  <g clip-path="url(#roundClip)">
+    <!-- Levi vrh -->
+    <path d="M 30 400 L 145 175 L 210 290 L 155 400 Z" fill="url(#mountain)" opacity="0.9"/>
+    <path d="M 125 215 L 145 175 L 175 230 L 150 255 Z" fill="url(#snow)"/>
+
+    <!-- Glavni vrh Triglav -->
+    <path d="M 90 410 L 256 70 L 430 410 Z" fill="url(#mountain)"/>
+    <path d="M 195 185 L 256 70 L 317 185 L 285 220 L 256 165 L 227 220 Z" fill="url(#snow)"/>
+    <path d="M 256 70 L 256 370" stroke="#FFFFFF" stroke-width="2.5" opacity="0.2"/>
+
+    <!-- Desni vrh -->
+    <path d="M 310 410 L 385 195 L 490 410 Z" fill="url(#mountain)" opacity="0.92"/>
+    <path d="M 360 235 L 385 195 L 418 250 L 390 270 Z" fill="url(#snow)"/>
+
+    <!-- Rdeča pasica (barva zastave) -->
+    <rect x="0" y="400" width="512" height="112" fill="url(#redAccent)"/>
+    <rect x="0" y="390" width="512" height="20" fill="url(#redAccent)" opacity="0.5"/>
+    <!-- Bela črta kot na zastavi -->
+    <rect x="0" y="396" width="512" height="6" fill="#FFFFFF" opacity="0.95"/>
+  </g>
+
+  <rect x="5" y="5" width="502" height="502" rx="103" ry="103"
+        fill="none" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="6"/>
+</svg>

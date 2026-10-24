@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:;">
+  <title>Triglav</title>
+  <style>
+    :root, [data-theme="dark"] {
+      --bg: #0f1115;
+      --surface: #1a1d24;
+      --surface2: #242830;
+      --border: #2e333d;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #8ab4f8;
+      --danger: #f28b82;
+      --success: #81c995;
+      --tab-active: #2a2f3a;
+      --panel-bg: #1a1d24;
+      --star: #fdd663;
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #e8eaed;
+      --border: #dadce0;
+      --text: #202124;
+      --muted: #5f6368;
+      --accent: #1a73e8;
+      --danger: #d93025;
+      --success: #188038;
+      --tab-active: #ffffff;
+      --panel-bg: #ffffff;
+      --star: #f9ab00;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ===== TAB BAR ===== */
+    .tab-bar {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      padding: 6px 8px 0;
+      gap: 4px;
+      height: 40px;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    .tab-bar::-webkit-scrollbar { height: 0; }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 6px 12px;
+      min-width: 140px;
+      max-width: 220px;
+      height: 34px;
+      cursor: pointer;
+      transition: background 0.12s;
+      flex-shrink: 0;
+    }
+    .tab:hover { background: var(--surface2); }
+    .tab.active {
+      background: var(--tab-active);
+      border-color: var(--border);
+    }
+
+    .tab-favicon {
+      width: 16px; height: 16px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      background: var(--border);
+    }
+
+    .tab-title {
+      flex: 1;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--muted);
+    }
+    .tab.active .tab-title { color: var(--text); }
+
+    .tab-close {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: all 0.12s;
+    }
+    .tab:hover .tab-close { opacity: 1; }
+    .tab-close:hover { background: var(--border); color: var(--danger); }
+
+    .new-tab-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-left: 4px;
+    }
+    .new-tab-btn:hover { background: var(--surface); color: var(--accent); }
+
+    /* ===== TOOLBAR ===== */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--tab-active);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      height: 50px;
+    }
+
+    .nav-group, .actions { display: flex; gap: 4px; }
+
+    .btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s;
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--border);
+      color: var(--accent);
+    }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn.loading { animation: spin 0.8s linear infinite; }
+    .btn.starred { color: var(--star); }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .url-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .url-bar {
+      width: 100%;
+      height: 36px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 0 16px 0 40px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .url-bar:focus { border-color: var(--accent); }
+
+    .url-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .url-secure { color: var(--success); }
+
+    /* ===== BOOKMARKS BAR ===== */
+    .bookmarks-bar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--tab-active);
+      border-bottom: 1px solid var(--border);
+      padding: 4px 10px;
+      height: 34px;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    .bookmarks-bar.hidden { display: none; }
+    .bookmarks-bar::-webkit-scrollbar { height: 0; }
+
+    .bm-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      max-width: 180px;
+      transition: background 0.1s;
+      flex-shrink: 0;
+    }
+    .bm-item:hover { background: var(--surface2); }
+
+    .bm-favicon {
+      width: 14px; height: 14px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .bm-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bm-empty {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 0 8px;
+    }
+
+    .bm-import-hint {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 0 8px;
+      cursor: pointer;
+    }
+    .bm-import-hint:hover { color: var(--accent); }
+
+    /* ===== SIDE PANEL ===== */
+    .panel-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      display: none;
+      justify-content: flex-end;
+    }
+    .panel-overlay.visible { display: flex; }
+
+    .panel {
+      width: 360px;
+      max-width: 90vw;
+      height: 100%;
+      background: var(--panel-bg);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .panel-close {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .panel-close:hover { background: var(--border); color: var(--text); }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .panel-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .panel-item:hover { background: var(--surface2); }
+
+    .panel-item-favicon {
+      width: 20px; height: 20px;
+      border-radius: 3px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .panel-item-content { flex: 1; min-width: 0; }
+
+    .panel-item-title {
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .panel-item-url {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .panel-item-remove {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      opacity: 0;
+      flex-shrink: 0;
+    }
+    .panel-item:hover .panel-item-remove { opacity: 1; }
+    .panel-item-remove:hover { background: var(--border); color: var(--danger); }
+
+    .panel-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .panel-actions {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .panel-btn {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .panel-btn:hover { background: var(--surface2); }
+    .panel-btn.danger { color: var(--danger); }
+    .panel-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .panel-btn.primary:hover { opacity: 0.9; }
+
+    
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .setting-info { flex: 1; min-width: 0; }
+    .setting-title { font-size: 13px; font-weight: 600; }
+    .setting-desc { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+    .toggle {
+      width: 42px; height: 24px;
+      border-radius: 12px;
+      border: none;
+      background: var(--border);
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .toggle.on { background: var(--accent); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.15s;
+    }
+    .toggle.on::after { transform: translateX(18px); }
+
+    
+    .choice-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 16px 14px;
+    }
+    .choice-chip {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .choice-chip:hover { border-color: var(--accent); }
+    .choice-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    .choice-swatch {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border-radius: 4px;
+      margin-right: 6px;
+      vertical-align: -2px;
+      border: 1px solid rgba(128,128,128,0.4);
+    }
+    .settings-section-title {
+      padding: 14px 16px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    /* ===== DOWNLOAD TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      min-width: 260px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 200;
+      display: none;
+      font-size: 13px;
+    }
+    .toast.visible { display: block; }
+    .toast-title { font-weight: 600; margin-bottom: 4px; }
+    .toast-progress {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .toast-progress-bar {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.2s;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <!-- Tab bar -->
+  <div class="tab-bar" id="tabBar">
+    <button class="new-tab-btn" id="newTabBtn" title="Nov zavihek (Ctrl+T)">+</button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="nav-group">
+      <button class="btn" id="backBtn" title="Nazaj" disabled>←</button>
+      <button class="btn" id="forwardBtn" title="Naprej" disabled>→</button>
+      <button class="btn" id="reloadBtn" title="Osveži">↻</button>
+      <button class="btn" id="homeBtn" title="Domov">⌂</button>
+    </div>
+
+    <div class="url-wrap">
+      <span class="url-icon" id="urlIcon">🔒</span>
+      <input type="text" class="url-bar" id="urlBar" placeholder="Išči ali vnesi naslov..." spellcheck="false" autocomplete="off">
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="bookmarkBtn" title="Dodaj zaznamek (Ctrl+D)">☆</button>
+      <button class="btn" id="bookmarksPanelBtn" title="Zaznamki (Ctrl+Shift+B)">📑</button>
+      <button class="btn" id="historyBtn" title="Zgodovina (Ctrl+H)">🕒</button>
+      <button class="btn" id="themeBtn" title="Preklopi temo (Ctrl+Shift+L)">🌙</button>
+      <button class="btn" id="settingsBtn" title="Nastavitve hitrosti">⚙️</button>
+    </div>
+  </div>
+
+  <!-- Bookmarks bar -->
+  <div class="bookmarks-bar" id="bookmarksBar">
+    <span class="bm-empty" id="bmEmpty">Ni zaznamkov – dodaj z ☆ ali uvozi iz drugega brskalnika</span>
+  </div>
+
+  <!-- Side panel -->
+  <div class="panel-overlay" id="panelOverlay">
+    <div class="panel">
+      <div class="panel-header">
+        <span id="panelTitle">Zaznamki</span>
+        <button class="panel-close" id="panelClose">×</button>
+      </div>
+      <div class="panel-body" id="panelBody"></div>
+      <div class="panel-actions" id="panelActions"></div>
+    </div>
+  </div>
+
+  <!-- Download toast -->
+  <div class="toast" id="toast">
+    <div class="toast-title" id="toastTitle">Prenašam...</div>
+    <div id="toastDetail"></div>
+    <div class="toast-progress"><div class="toast-progress-bar" id="toastBar" style="width:0%"></div></div>
+  </div>
+
+  <script>
+    const tabBar = document.getElementById('tabBar');
+    const newTabBtn = document.getElementById('newTabBtn');
+    const backBtn = document.getElementById('backBtn');
+    const forwardBtn = document.getElementById('forwardBtn');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const homeBtn = document.getElementById('homeBtn');
+    const urlBar = document.getElementById('urlBar');
+    const urlIcon = document.getElementById('urlIcon');
+    const bookmarkBtn = document.getElementById('bookmarkBtn');
+    const bookmarksPanelBtn = document.getElementById('bookmarksPanelBtn');
+    const historyBtn = document.getElementById('historyBtn');
+    const themeBtn = document.getElementById('themeBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const bookmarksBar = document.getElementById('bookmarksBar');
+    let currentSettings = { blockTrackers: true, lazyImages: true, preloadBookmarks: true };
+    const panelOverlay = document.getElementById('panelOverlay');
+    const panelTitle = document.getElementById('panelTitle');
+    const panelBody = document.getElementById('panelBody');
+    const panelActions = document.getElementById('panelActions');
+    const panelClose = document.getElementById('panelClose');
+    const toast = document.getElementById('toast');
+    const toastTitle = document.getElementById('toastTitle');
+    const toastDetail = document.getElementById('toastDetail');
+    const toastBar = document.getElementById('toastBar');
+
+    let currentTheme = 'dark';
+    let currentBookmarks = [];
+    let showBookmarksBar = true;
+
+    // ===== Tabs =====
+    function renderTabs(tabs) {
+      const existing = tabBar.querySelectorAll('.tab');
+      existing.forEach(el => el.remove());
+
+      tabs.forEach(tab => {
+        const el = document.createElement('div');
+        el.className = 'tab' + (tab.active ? ' active' : '');
+        el.dataset.id = tab.id;
+
+        const favicon = document.createElement('img');
+        favicon.className = 'tab-favicon';
+        if (tab.favicon) {
+          favicon.src = tab.favicon;
+          favicon.onerror = () => { favicon.style.display = 'none'; };
+        } else {
+          favicon.style.display = 'none';
+        }
+
+        const title = document.createElement('span');
+        title.className = 'tab-title';
+        title.textContent = tab.title || 'Nov zavihek';
+
+        const close = document.createElement('button');
+        close.className = 'tab-close';
+        close.innerHTML = '×';
+        close.title = 'Zapri';
+        close.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.browserAPI.closeTab(tab.id);
+        });
+
+        el.appendChild(favicon);
+        el.appendChild(title);
+        el.appendChild(close);
+        el.addEventListener('click', () => window.browserAPI.switchTab(tab.id));
+        el.addEventListener('mousedown', (e) => {
+          if (e.button === 1) {
+            e.preventDefault();
+            window.browserAPI.closeTab(tab.id);
+          }
+        });
+
+        tabBar.insertBefore(el, newTabBtn);
+      });
+    }
+
+    function updateUrl(url) {
+      urlBar.value = url || '';
+      if (url && url.startsWith('https://')) {
+        urlIcon.textContent = '🔒';
+        urlIcon.className = 'url-icon url-secure';
+      } else {
+        urlIcon.textContent = '🌐';
+        urlIcon.className = 'url-icon';
+      }
+    }
+
+    function updateNavState(state) {
+      backBtn.disabled = !state.canGoBack;
+      forwardBtn.disabled = !state.canGoForward;
+    }
+
+    function setLoading(isLoading) {
+      reloadBtn.classList.toggle('loading', isLoading);
+    }
+
+    function setBookmarkState(isBookmarked) {
+      bookmarkBtn.textContent = isBookmarked ? '★' : '☆';
+      bookmarkBtn.classList.toggle('starred', isBookmarked);
+      bookmarkBtn.title = isBookmarked ? 'Odstrani zaznamek (Ctrl+D)' : 'Dodaj zaznamek (Ctrl+D)';
+    }
+
+    // ===== Bookmarks bar =====
+    function renderBookmarksBar(bookmarks) {
+      currentBookmarks = bookmarks || [];
+      bookmarksBar.innerHTML = '';
+
+      if (!currentBookmarks.length) {
+        const empty = document.createElement('span');
+        empty.className = 'bm-empty';
+        empty.textContent = 'Ni zaznamkov – dodaj z ☆ ali ';
+        const importLink = document.createElement('span');
+        importLink.className = 'bm-import-hint';
+        importLink.textContent = 'uvozi iz drugega brskalnika';
+        importLink.title = 'Uvozi HTML datoteko (Chrome, Firefox, Edge…)';
+        importLink.addEventListener('click', doImport);
+        empty.appendChild(importLink);
+        bookmarksBar.appendChild(empty);
+        return;
+      }
+
+      // Prikaži največ ~15 na vrstici (ostali v panelu)
+      const visible = currentBookmarks.slice(0, 20);
+      visible.forEach(b => {
+        const item = document.createElement('div');
+        item.className = 'bm-item';
+        item.title = b.url;
+
+        if (b.favicon) {
+          const fav = document.createElement('img');
+          fav.className = 'bm-favicon';
+          fav.src = b.favicon;
+          fav.onerror = () => { fav.style.display = 'none'; };
+          item.appendChild(fav);
+        }
+
+        const title = document.createElement('span');
+        title.className = 'bm-title';
+        title.textContent = b.title || b.url;
+        item.appendChild(title);
+
+        item.addEventListener('click', () => {
+          window.browserAPI.openBookmark(b.url);
+        });
+
+        // Desni klik – odstrani
+        item.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          if (confirm('Odstrani zaznamek?\n' + (b.title || b.url))) {
+            window.browserAPI.removeBookmark(b.url);
+          }
+        });
+
+        bookmarksBar.appendChild(item);
+      });
+
+      if (currentBookmarks.length > 20) {
+        const more = document.createElement('div');
+        more.className = 'bm-item';
+        more.style.color = 'var(--muted)';
+        more.textContent = `+${currentBookmarks.length - 20} več`;
+        more.title = 'Odpri vse zaznamke';
+        more.addEventListener('click', () => showPanel('bookmarks'));
+        bookmarksBar.appendChild(more);
+      }
+    }
+
+    function applySettings(settings) {
+      if (!settings) return;
+      currentSettings = { ...currentSettings, ...settings };
+      showBookmarksBar = settings.showBookmarksBar !== false;
+      bookmarksBar.classList.toggle('hidden', !showBookmarksBar);
+      if (panelOverlay.classList.contains('visible') && panelTitle.textContent === 'Nastavitve') {
+        renderSettingsPanel();
+      }
+    }
+
+    // ===== Theme =====
+    function applyTheme(theme) {
+      // theme tukaj je že razrešen (dark/light), ne "system"
+      currentTheme = theme === 'light' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', currentTheme);
+      const pref = (currentSettings && currentSettings.theme) || currentTheme;
+      if (pref === 'system') {
+        themeBtn.textContent = '💻';
+        themeBtn.title = 'Sistemsko ozadje (trenutno: ' + (currentTheme === 'dark' ? 'temno' : 'svetlo') + ')';
+      } else if (currentTheme === 'dark') {
+        themeBtn.textContent = '🌙';
+        themeBtn.title = 'Temno ozadje – klik za menjavo';
+      } else {
+        themeBtn.textContent = '☀️';
+        themeBtn.title = 'Svetlo ozadje – klik za menjavo';
+      }
+    }
+
+    // ===== Panel =====
+    function showPanel(type) {
+      panelOverlay.classList.add('visible');
+      if (type === 'bookmarks') {
+        panelTitle.textContent = 'Zaznamki';
+        renderBookmarksPanel(currentBookmarks);
+      } else if (type === 'history') {
+        panelTitle.textContent = 'Zgodovina';
+        window.browserAPI.getHistory().then(renderHistoryPanel);
+      } else if (type === 'settings') {
+        panelTitle.textContent = 'Nastavitve';
+        renderSettingsPanel();
+      }
+    }
+
+    function renderSettingsPanel() {
+      panelBody.innerHTML = '';
+      panelActions.innerHTML = '';
+
+      // --- Ozadje / tema ---
+      const sec1 = document.createElement('div');
+      sec1.className = 'settings-section-title';
+      sec1.textContent = 'Ozadje';
+      panelBody.appendChild(sec1);
+
+      const themeGroup = document.createElement('div');
+      themeGroup.className = 'choice-group';
+      const themes = [
+        { id: 'dark', label: 'Temno', icon: '🌙' },
+        { id: 'light', label: 'Svetlo', icon: '☀️' },
+        { id: 'system', label: 'Sistemsko', icon: '💻' }
+      ];
+      themes.forEach(opt => {
+        const chip = document.createElement('button');
+        chip.className = 'choice-chip' + ((currentSettings.theme || 'dark') === opt.id ? ' active' : '');
+        chip.textContent = opt.icon + ' ' + opt.label;
+        chip.addEventListener('click', async () => {
+          const updated = await window.browserAPI.updateSetting('theme', opt.id);
+          if (updated) applySettings(updated);
+        });
+        themeGroup.appendChild(chip);
+      });
+      panelBody.appendChild(themeGroup);
+
+      // --- Stil temnega ozadja ---
+      const sec2 = document.createElement('div');
+      sec2.className = 'settings-section-title';
+      sec2.textContent = 'Stil temnega ozadja';
+      panelBody.appendChild(sec2);
+
+      const bgGroup = document.createElement('div');
+      bgGroup.className = 'choice-group';
+      const bgs = [
+        { id: 'default', label: 'Klasično', color: '#0f1115' },
+        { id: 'midnight', label: 'Polnoč', color: '#0a0e17' },
+        { id: 'ocean', label: 'Ocean', color: '#0b1a2b' },
+        { id: 'slate', label: 'Skrilavec', color: '#1c1f26' }
+      ];
+      bgs.forEach(opt => {
+        const chip = document.createElement('button');
+        chip.className = 'choice-chip' + ((currentSettings.backgroundStyle || 'default') === opt.id ? ' active' : '');
+        chip.innerHTML = '<span class="choice-swatch" style="background:' + opt.color + '"></span>' + opt.label;
+        chip.addEventListener('click', async () => {
+          const updated = await window.browserAPI.updateSetting('backgroundStyle', opt.id);
+          if (updated) applySettings(updated);
+        });
+        bgGroup.appendChild(chip);
+      });
+      panelBody.appendChild(bgGroup);
+
+      // --- Hitrost ---
+      const sec3 = document.createElement('div');
+      sec3.className = 'settings-section-title';
+      sec3.textContent = 'Hitrost';
+      panelBody.appendChild(sec3);
+
+      const items = [
+        {
+          key: 'blockTrackers',
+          title: 'Blokada sledilnikov',
+          desc: 'Blokira oglase in analitiko. Manj zahtev = hitrejša stran.'
+        },
+        {
+          key: 'lazyImages',
+          title: 'Lazy-load slik',
+          desc: 'Slike izven zaslona se naložijo šele, ko jih potrebuješ.'
+        },
+        {
+          key: 'preloadBookmarks',
+          title: 'Prednalaganje zaznamkov',
+          desc: 'V ozadju prednaloži do 8 zaznamkov v predpomnilnik.'
+        },
+        {
+          key: 'showBookmarksBar',
+          title: 'Vrstica z zaznamki',
+          desc: 'Prikaži vrstico z zaznamki pod orodno vrstico.'
+        }
+      ];
+
+      items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'setting-row';
+        const on = currentSettings[item.key] !== false;
+
+        const info = document.createElement('div');
+        info.className = 'setting-info';
+        info.innerHTML = `<div class="setting-title">${item.title}</div><div class="setting-desc">${item.desc}</div>`;
+
+        const btn = document.createElement('button');
+        btn.className = 'toggle' + (on ? ' on' : '');
+        btn.title = on ? 'Vklopljeno' : 'Izklopljeno';
+        btn.addEventListener('click', async () => {
+          const next = !(currentSettings[item.key] !== false);
+          const updated = await window.browserAPI.updateSetting(item.key, next);
+          if (updated) applySettings(updated);
+        });
+
+        row.appendChild(info);
+        row.appendChild(btn);
+        panelBody.appendChild(row);
+      });
+
+      const note = document.createElement('div');
+      note.className = 'panel-empty';
+      note.style.padding = '16px';
+      note.style.fontSize = '12px';
+      note.innerHTML = 'Disk cache (do 512 MB) je vedno aktiven za hitrejše ponovne obiske.';
+      panelBody.appendChild(note);
+    }
+
+    function hidePanel() {
+      panelOverlay.classList.remove('visible');
+    }
+
+    function renderBookmarksPanel(bookmarks) {
+      currentBookmarks = bookmarks || [];
+      panelBody.innerHTML = '';
+      panelActions.innerHTML = '';
+
+      // Gumbi za uvoz/izvoz
+      const importBtn = document.createElement('button');
+      importBtn.className = 'panel-btn primary';
+      importBtn.textContent = '📥 Uvozi iz Chrome / Firefox / Edge…';
+      importBtn.addEventListener('click', doImport);
+      panelActions.appendChild(importBtn);
+
+      const exportBtn = document.createElement('button');
+      exportBtn.className = 'panel-btn';
+      exportBtn.textContent = '📤 Izvozi zaznamke (HTML)';
+      exportBtn.addEventListener('click', doExport);
+      panelActions.appendChild(exportBtn);
+
+      if (!currentBookmarks.length) {
+        panelBody.innerHTML = '<div class="panel-empty">Ni zaznamkov.<br><br>Pritisni ☆ za dodajanje<br>ali uvozi iz drugega brskalnika.</div>';
+        return;
+      }
+
+      currentBookmarks.forEach(b => {
+        const item = document.createElement('div');
+        item.className = 'panel-item';
+
+        const fav = document.createElement('img');
+        fav.className = 'panel-item-favicon';
+        if (b.favicon) {
+          fav.src = b.favicon;
+          fav.onerror = () => { fav.style.display = 'none'; };
+        } else {
+          fav.style.display = 'none';
+        }
+
+        const content = document.createElement('div');
+        content.className = 'panel-item-content';
+        content.innerHTML = `<div class="panel-item-title">${escapeHtml(b.title)}</div>
+                             <div class="panel-item-url">${escapeHtml(b.url)}</div>`;
+
+        const remove = document.createElement('button');
+        remove.className = 'panel-item-remove';
+        remove.innerHTML = '×';
+        remove.title = 'Odstrani';
+        remove.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.browserAPI.removeBookmark(b.url);
+        });
+
+        item.appendChild(fav);
+        item.appendChild(content);
+        item.appendChild(remove);
+        item.addEventListener('click', () => {
+          window.browserAPI.openBookmark(b.url);
+          hidePanel();
+        });
+
+        panelBody.appendChild(item);
+      });
+    }
+
+    function renderHistoryPanel(historyItems) {
+      panelBody.innerHTML = '';
+      panelActions.innerHTML = '';
+
+      if (!historyItems.length) {
+        panelBody.innerHTML = '<div class="panel-empty">Zgodovina je prazna.</div>';
+        return;
+      }
+
+      historyItems.forEach(h => {
+        const item = document.createElement('div');
+        item.className = 'panel-item';
+
+        const content = document.createElement('div');
+        content.className = 'panel-item-content';
+        const time = new Date(h.timestamp).toLocaleString('sl-SI', {
+          day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+        });
+        content.innerHTML = `<div class="panel-item-title">${escapeHtml(h.title)}</div>
+                             <div class="panel-item-url">${time} · ${escapeHtml(h.url)}</div>`;
+
+        item.appendChild(content);
+        item.addEventListener('click', () => {
+          window.browserAPI.openHistoryItem(h.url);
+          hidePanel();
+        });
+
+        panelBody.appendChild(item);
+      });
+
+      const clearBtn = document.createElement('button');
+      clearBtn.className = 'panel-btn danger';
+      clearBtn.textContent = 'Počisti zgodovino';
+      clearBtn.addEventListener('click', () => {
+        if (confirm('Res želiš izbrisati vso zgodovino?')) {
+          window.browserAPI.clearHistory();
+        }
+      });
+      panelActions.appendChild(clearBtn);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    // ===== Import / Export =====
+    async function doImport() {
+      const result = await window.browserAPI.importBookmarks();
+      if (!result) return;
+      if (result.error) {
+        alert('Napaka pri uvozu: ' + result.error);
+      } else if (result.imported === 0 && result.skipped === 0) {
+        // preklicano
+      } else {
+        alert(`Uvoženih: ${result.imported}` +
+          (result.skipped ? `\nPreskočenih (že obstajajo): ${result.skipped}` : '') +
+          `\nSkupaj v datoteki: ${result.total}`);
+      }
+    }
+
+    async function doExport() {
+      const result = await window.browserAPI.exportBookmarks();
+      if (result && result.ok) {
+        alert('Zaznamki izvoženi v:\n' + result.path);
+      }
+    }
+
+    // ===== Toast =====
+    let toastTimeout = null;
+    function showToast(title, detail, percent) {
+      toast.classList.add('visible');
+      toastTitle.textContent = title;
+      toastDetail.textContent = detail || '';
+      if (typeof percent === 'number') {
+        toastBar.style.width = percent + '%';
+      }
+      clearTimeout(toastTimeout);
+    }
+
+    function hideToast(delay = 3000) {
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('visible');
+      }, delay);
+    }
+
+    // ===== Events =====
+    urlBar.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        window.browserAPI.navigate(urlBar.value);
+        urlBar.blur();
+      }
+    });
+    urlBar.addEventListener('focus', () => setTimeout(() => urlBar.select(), 0));
+
+    backBtn.addEventListener('click', () => window.browserAPI.goBack());
+    forwardBtn.addEventListener('click', () => window.browserAPI.goForward());
+    reloadBtn.addEventListener('click', () => window.browserAPI.reload());
+    homeBtn.addEventListener('click', () => window.browserAPI.goHome());
+    newTabBtn.addEventListener('click', () => window.browserAPI.newTab());
+    bookmarkBtn.addEventListener('click', () => window.browserAPI.toggleBookmark());
+    bookmarksPanelBtn.addEventListener('click', () => showPanel('bookmarks'));
+    historyBtn.addEventListener('click', () => showPanel('history'));
+    themeBtn.addEventListener('click', () => window.browserAPI.toggleTheme());
+    settingsBtn.addEventListener('click', () => showPanel('settings'));
+    panelClose.addEventListener('click', hidePanel);
+    panelOverlay.addEventListener('click', (e) => {
+      if (e.target === panelOverlay) hidePanel();
+    });
+
+    // Tipkovne bližnjice
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 't') { e.preventDefault(); window.browserAPI.newTab(); }
+        else if (e.key === 'w') { e.preventDefault(); window.browserAPI.closeTab(); }
+        else if (e.key === 'l') { e.preventDefault(); urlBar.focus(); urlBar.select(); }
+        else if (e.key === 'r') { e.preventDefault(); window.browserAPI.reload(); }
+        else if (e.key === 'd') { e.preventDefault(); window.browserAPI.toggleBookmark(); }
+        else if (e.key === 'h') { e.preventDefault(); showPanel('history'); }
+        else if (e.shiftKey && e.key.toLowerCase() === 'b') { e.preventDefault(); showPanel('bookmarks'); }
+        else if (e.shiftKey && e.key.toLowerCase() === 'l') { e.preventDefault(); window.browserAPI.toggleTheme(); }
+        else if (e.shiftKey && e.key.toLowerCase() === 'a') {
+          e.preventDefault();
+          window.browserAPI.toggleBookmarksBar();
+        }
+      }
+      if (e.key === 'Escape') hidePanel();
+    });
+
+    // ===== IPC listeners =====
+    window.browserAPI.onTabsUpdated(renderTabs);
+    window.browserAPI.onUrlUpdated(updateUrl);
+    window.browserAPI.onNavigationState(updateNavState);
+    window.browserAPI.onLoading(setLoading);
+    window.browserAPI.onBookmarkState(setBookmarkState);
+    window.browserAPI.onBookmarksUpdated((bms) => {
+      renderBookmarksBar(bms);
+      if (panelOverlay.classList.contains('visible') && panelTitle.textContent === 'Zaznamki') {
+        renderBookmarksPanel(bms);
+      }
+    });
+    window.browserAPI.onHistoryUpdated((h) => {
+      if (panelOverlay.classList.contains('visible') && panelTitle.textContent === 'Zgodovina') {
+        renderHistoryPanel(h);
+      }
+    });
+    window.browserAPI.onThemeChanged(applyTheme);
+    window.browserAPI.onSettingsUpdated(applySettings);
+    window.browserAPI.onShowPanel(showPanel);
+
+    window.browserAPI.onDownloadStarted((data) => {
+      showToast('Prenašam...', data.fileName, 0);
+    });
+    window.browserAPI.onDownloadProgress((data) => {
+      showToast('Prenašam...', `${data.fileName} (${data.percent}%)`, data.percent);
+    });
+    window.browserAPI.onDownloadDone((data) => {
+      if (data.state === 'completed') {
+        showToast('Prenos končan', data.fileName, 100);
+      } else {
+        showToast('Prenos prekinjen', data.fileName);
+      }
+      hideToast(4000);
+    });
+
+    // Začetne nastavitve
+    window.browserAPI.getSettings().then(s => { if (s) applySettings(s); }).catch(() => {});
+
+    // Začetni fokus
+    urlBar.focus();
+  </script>
+</body>
+</html>

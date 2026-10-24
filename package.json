@@ -1,0 +1,75 @@
+{
+  "name": "triglav",
+  "version": "1.2.0",
+  "description": "Triglav – slovenski spletni brskalnik",
+  "main": "main.js",
+  "author": "Grok",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable",
+    "build:installer": "electron-builder --win nsis",
+    "build:dir": "electron-builder --win --dir"
+  },
+  "keywords": ["browser", "electron", "triglav", "brskalnik"],
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "si.triglav.browser",
+    "productName": "Triglav",
+    "copyright": "Copyright 2026",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "icon.png",
+      "icon.ico",
+      "icon-256.png",
+      "icon-128.png",
+      "icon-64.png",
+      "icon-32.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "icon.ico",
+      "artifactName": "Triglav-${version}-${os}-${env.TARGET_TYPE}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Triglav",
+      "uninstallDisplayName": "Triglav",
+      "license": null,
+      "artifactName": "Triglav-Setup-${version}.exe",
+      "deleteAppDataOnUninstall": false,
+      "installerLanguages": ["sl_SI", "en_US"],
+      "language": "1060"
+    },
+    "portable": {
+      "artifactName": "Triglav-${version}-portable.exe"
+    }
+  }
+}
